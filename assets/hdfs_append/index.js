@@ -5,7 +5,8 @@ const Promise = require('bluebird');
 const path = require('path');
 
 
-function newProcessor(context, opConfig, jobConfig) {
+function newProcessor(context, opConfig) {
+    const logger = context.apis.foundation.makeLogger({ module: 'hdfs_append' });
     // Client connection cannot be cached, an endpoint needs to be re-instantiated for a different
     // namenode_host
     opConfig.connection_cache = false;
@@ -39,7 +40,7 @@ function newProcessor(context, opConfig, jobConfig) {
                 }))
             .return(chunks)
             // We need to serialize the storage of chunks so we run with concurrency 1
-            .map(chunks, chunk => hdfsClient.appendAsync(filename, chunk), { concurrency: 1 })
+            .map(chunk => hdfsClient.appendAsync(filename, chunk), { concurrency: 1 })
             .catch((err) => {
                 const errMsg = err.stack ? err.stack : err;
                 let sliceError = '';
@@ -95,14 +96,14 @@ function newProcessor(context, opConfig, jobConfig) {
         function sendFiles() {
             const stores = [];
             _.forOwn(map, (chunks, key) => {
-                stores.push(prepareFile(key, chunks, jobConfig.logger));
+                stores.push(prepareFile(key, chunks, logger));
             });
 
             // We can process all individual files in parallel.
             return Promise.all(stores)
                 .catch((err) => {
                     const errMsg = err.stack ? err.stack : err;
-                    jobConfig.logger.error(`Error while sending to hdfs, error: ${errMsg}`);
+                    logger.error(`Error while sending to hdfs, error: ${errMsg}`);
                     return Promise.reject(err);
                 });
         }

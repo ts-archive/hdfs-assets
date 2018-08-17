@@ -1,9 +1,7 @@
 'use strict';
 
 const Promise = require('bluebird');
-// const path = require('path');
 const Queue = require('@terascope/queue');
-// const fs = require('fs');
 
 
 function getClient(context, config, type) {
@@ -41,15 +39,18 @@ function newSlicer(context, executionContext, retryData, logger) {
             while (fileSize > 0) {
                 const length = fileSize > opConfig.size ? opConfig.size : fileSize;
                 // This grabs the character immediately before the chunk to help check whether or
-                // not the chunk starts with a complete record
+                // not the chunk starts with a complete record. If this is done, the length also
+                // needs to increase by 1 to ensure no data is lost
                 let startSpot = offset;
+                let readLength = length;
                 if (offset > 0) {
                     startSpot = offset - 1;
+                    readLength = length + 1;
                 }
                 queue.enqueue({
                     path: `${filePath}/${file.pathSuffix}`,
                     offset: startSpot,
-                    length,
+                    length: readLength,
                     total: totalLength
                 });
                 fileSize -= opConfig.size;
@@ -84,36 +85,30 @@ function newSlicer(context, executionContext, retryData, logger) {
 
 function newReader(context, opConfig) {
     const formatters = {
-        jsonLines: (data, logger) => data.map(record => JSON.parse(record))
+        jsonLines: (data, logger) => Promise.map(data, record => JSON.parse(record))
             .filter(element => element !== undefined).catch((err) => {
                 logger.error(`There was an error processing the record: ${err}`);
-            }),
+            })
     };
     // Set up a logger
     const logger = context.apis.foundation.makeLogger({ module: 'hdfs_reader' });
+    logger.info('hdfs_reader logger initialized!!');
     const clientService = getClient(context, opConfig, 'hdfs_ha');
+    logger.info('client created!!!');
     const hdfsClient = clientService.client;
+    logger.info('client assigned!!');
     const chunkFormater = formatters[opConfig.format];
 
     return function processSlice(slice) {
+        logger.info('processing slice!!!');
         // Hardcoding the line delimiter, but this could be arbitrary
         // TODO paramaterize this in the config
         const lineDelimiter = '\n';
         return getChunk(hdfsClient, slice, lineDelimiter)
             .then(data => cleanData(data, lineDelimiter, slice))
-            .then(results => chunkFormater(results, logger))
+            .then(results => chunkFormater(results, logger, slice))
             .catch(err => Promise.reject(parseError(err)));
     };
-
-    // return function readChunk(slice) {
-    //     return determineChunk(hdfsClient, slice, logger)
-    //         .then(results => chunkFormater(results, logger))
-    //         .catch((err) => {
-    //             const errMsg = parseError(err);
-    //             logger.error(errMsg);
-    //             return Promise.reject(err);
-    //         });
-    // };
 }
 
 function parseError(err) {
@@ -182,12 +177,19 @@ function cleanData(rawData, delimiter, slice) {
      * with a garbage record
      */
 
-    if (slice.offset === 0) {
-        // Return everthing
-        return rawData.split(delimiter);
+    let outputData = rawData;
+    // Get rid of last character if it is the delimiter since that will just result in an empty
+    // record
+    if (rawData[rawData.length - 1] === delimiter) {
+        outputData = rawData.substring(0, rawData.length - 1);
     }
 
-    return rawData.split(delimiter).splice(1);
+    if (slice.offset === 0) {
+        // Return everthing
+        return outputData.split(delimiter);
+    }
+
+    return outputData.split(delimiter).splice(1);
 }
 
 
@@ -219,8 +221,8 @@ function schema() {
         },
         format: {
             doc: 'Format of the target file. Currently only supports "json_lines"',
-            default: 'json_lines',
-            format: ['json_lines']
+            default: 'jsonLines',
+            format: ['jsonLines']
         },
         connection: {
             doc: 'Name of the HDFS connection to use.',
