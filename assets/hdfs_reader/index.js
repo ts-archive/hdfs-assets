@@ -92,15 +92,11 @@ function newReader(context, opConfig) {
     };
     // Set up a logger
     const logger = context.apis.foundation.makeLogger({ module: 'hdfs_reader' });
-    logger.info('hdfs_reader logger initialized!!');
     const clientService = getClient(context, opConfig, 'hdfs_ha');
-    logger.info('client created!!!');
     const hdfsClient = clientService.client;
-    logger.info('client assigned!!');
     const chunkFormater = formatters[opConfig.format];
 
     return function processSlice(slice) {
-        logger.info('processing slice!!!');
         // Hardcoding the line delimiter, but this could be arbitrary
         // TODO paramaterize this in the config
         const lineDelimiter = '\n';

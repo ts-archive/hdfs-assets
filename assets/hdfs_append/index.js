@@ -23,6 +23,39 @@ function newProcessor(context, opConfig) {
     //       processing duration will keep the worker from toppling the Namenode
     const appendErrors = {};
 
+    // Records the name of the offending file with a detected corrupt block in `appendErrors`
+    function recordFileError(name) {
+        let newFilename = '';
+        if (!appendErrors[name]) {
+            newFilename = `${name}.0`;
+            appendErrors[name] = newFilename;
+        } else {
+            // Get the last attempted file and increment the number
+            const incNum = appendErrors[name].split('.').reverse()[0] * 1 + 1;
+            newFilename = `${name}.${incNum}`;
+            // Set the new target for the next slice attempt
+            appendErrors[name] = newFilename;
+        }
+    }
+
+    // This just checks `appendErrors` for the file to determine if data needs to be redirected to
+    // the new file
+    function checkFileHistory(name) {
+        // If the file has already had an error, update the filename for the next write
+        // attempt
+        if (appendErrors[name]) {
+            const attemptNum = appendErrors[name].split('.').reverse()[0] * 1;
+            // This stops the worker from creating too many new files
+            if (attemptNum > opConfig.max_write_errors) {
+                throw new Error(
+                    `${name} has exceeded the maximum number of write attempts!`
+                );
+            }
+            return appendErrors[name];
+        }
+        return name;
+    }
+
     const clientService = getClient(context, opConfig, 'hdfs_ha');
     const hdfsClient = clientService.client;
 
@@ -46,21 +79,11 @@ function newProcessor(context, opConfig) {
                 let sliceError = '';
                 // Detecting the hdfs append error and updating the filename
                 if (errMsg.indexOf('AlreadyBeingCreatedException') > -1) {
-                    let newFilename = '';
-                    if (!appendErrors[filename]) {
-                        newFilename = `${filename}.0`;
-                        appendErrors[filename] = newFilename;
-                    } else {
-                        // Get the last attempted file and increment the number
-                        const incNum = appendErrors[filename].split('.').reverse()[0] * 1 + 1;
-                        newFilename = `${filename}.${incNum}`;
-                        // Set the new target for the next slice attempt
-                        appendErrors[filename] = newFilename;
-                    }
+                    const newFilename = recordFileError(filename);
                     sliceError = `Error sending data to file '${filename}' due to HDFS append `
                         + `error. Changing destination to '${newFilename}'. Error: ${errMsg}`;
                 } else {
-                    sliceError = `Error sending data to file: ${filename}, error: ${errMsg}`;
+                    sliceError = `Error sending data to file: ${filename}, Error: ${errMsg}`;
                 }
                 if (opConfig.log_data_on_error === true) {
                     sliceError = `${sliceError} Data: ${JSON.stringify(chunks)}`;
@@ -75,19 +98,7 @@ function newProcessor(context, opConfig) {
         data.forEach((record) => {
             // This skips any records that have non-existant data payloads to avoid empty appends
             if (record.data.length > 0) {
-                let file = record.filename;
-                // If the file has already had an error, update the filename for the next write
-                // attempt
-                if (appendErrors[file]) {
-                    const attemptNum = appendErrors[file].split('.').reverse()[0] * 1;
-                    // This stops the worker from creating too many new files
-                    if (attemptNum > opConfig.max_writes) {
-                        throw new Error(
-                            `${file} has exceeded the maximum number of write attempts!`
-                        );
-                    }
-                    file = appendErrors[file];
-                }
+                const file = checkFileHistory(record.filename);
                 if (!map[file]) map[file] = [];
                 map[file].push(record.data);
             }
@@ -141,15 +152,15 @@ function schema() {
             default: false,
             format: Boolean
         },
-        max_writes: {
+        max_write_errors: {
             doc: 'Determines how many times a worker can create a new file after append errors '
                 + 'before throwing an error on every slice attempt. Defaults to 100',
             default: 100,
             format: (val) => {
                 if (isNaN(val)) {
-                    throw new Error('size parameter for max_writes must be a number!');
+                    throw new Error('size parameter for max_write_errors must be a number!');
                 } else if (val <= 0) {
-                    throw new Error('size parameter for max_writes must be greater than zero!');
+                    throw new Error('size parameter for max_write_errors must be greater than zero!');
                 }
             }
         }
