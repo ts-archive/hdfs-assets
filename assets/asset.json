@@ -1,0 +1,5 @@
+{
+    "name": "hdfs-assets",
+    "version": "0.1.12",
+    "description": "A set of assets for interacting with HDFS data"
+}
