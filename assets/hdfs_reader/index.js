@@ -2,7 +2,7 @@
 
 const Promise = require('bluebird');
 const Queue = require('@terascope/queue');
-const chunkReader = require('../lib/chunk_settings');
+const chunkReader = require('@terascope/chunked-file-reader');
 
 
 function getClient(context, config, type) {
