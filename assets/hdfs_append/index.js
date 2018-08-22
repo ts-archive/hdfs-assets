@@ -5,6 +5,22 @@ const Promise = require('bluebird');
 const path = require('path');
 
 
+function getClient(context, config, type) {
+    const clientConfig = {};
+    clientConfig.type = type;
+
+    if (config && config.connection) {
+        clientConfig.endpoint = config.connection ? config.connection : 'default';
+        clientConfig.cached = config.connection_cache !== undefined
+            ? config.connection_cache : true;
+    } else {
+        clientConfig.endpoint = 'default';
+        clientConfig.cached = true;
+    }
+
+    return context.foundation.getConnection(clientConfig);
+}
+
 function newProcessor(context, opConfig) {
     const logger = context.apis.foundation.makeLogger({ module: 'hdfs_append' });
     // Client connection cannot be cached, an endpoint needs to be re-instantiated for a different
@@ -121,22 +137,6 @@ function newProcessor(context, opConfig) {
 
         return sendFiles();
     };
-}
-
-function getClient(context, config, type) {
-    const clientConfig = {};
-    clientConfig.type = type;
-
-    if (config && config.connection) {
-        clientConfig.endpoint = config.connection ? config.connection : 'default';
-        clientConfig.cached = config.connection_cache !== undefined
-            ? config.connection_cache : true;
-    } else {
-        clientConfig.endpoint = 'default';
-        clientConfig.cached = true;
-    }
-
-    return context.foundation.getConnection(clientConfig);
 }
 
 function schema() {

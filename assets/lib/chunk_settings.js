@@ -1,59 +1,57 @@
 'use strict';
 
+const chunkFormatter = require('./chunk_formatter');
 
-/* This module is a set of functions that can be used for general files readers. These functions
- * will determine the various settings needed for reading files chunks
- */
+// This function will grab the chunk of data specified by the slice plus an extra margin if the
+// slice is not at the end of the file. It needs to read the file twice, first grabbing the data
+// specified in the slice and then the margin, which gets appended to the data
+function getChunk(readerClient, slice, opConfig, logger) {
+    function averageRecordSize(array) {
+        return Math.floor(array.reduce((accum, str) => accum + str.length, 0) / array.length);
+    }
 
-// This function sets up the options object that will be passed down the read promise chain
-function getReadOptions(slice, opConfig) {
-    const chunkOptions = {};
-    chunkOptions.needMargin = false;
-    chunkOptions.delimiter = opConfig.line_delimiter;
-    chunkOptions.path = slice.path;
-    // Set up a spot to store the data from the read
-    chunkOptions.data = {};
-    chunkOptions.options = {};
+    function getMargin(marginOpts) {
+        // This grabs the start of the margin up to the first delimiter, which should be the
+        // remainder of a truncated record
+        return readerClient(marginOpts.offset, marginOpts.length)
+            .then(data => data.split(opConfig.delimiter)[0]);
+    }
+
+
+    let needMargin = false;
     if (slice.length) {
-        chunkOptions.options.offset = slice.offset;
-        chunkOptions.options.length = slice.length;
         // Determines whether or not to grab the extra margin.
         if (slice.offset + slice.length !== slice.total) {
-            chunkOptions.needMargin = true;
+            needMargin = true;
         }
     }
-    return chunkOptions;
-}
 
-function averageRecordSize(array) {
-    return Math.floor(array.reduce((accum, str) => accum + str.length, 0) / array.length);
+    return readerClient(slice.offset, slice.length)
+        .then((data) => {
+            const finalChar = data[data.length - 1];
+            // Skip the margin if the raw data ends with a newline since it will end with a complete
+            // record
+            if (finalChar === '\n') {
+                needMargin = false;
+            }
+            if (needMargin) {
+                const avgSize = averageRecordSize(data.split(opConfig.delimiter));
+                const marginOptions = {};
+                // Safety margin of two average-sized records
+                marginOptions.length = avgSize * 2;
+                marginOptions.offset = slice.offset + slice.length;
+                return getMargin(marginOptions)
+                    .then(margin => cleanData(`${data}${margin}`, slice, opConfig));
+            }
+            // logger.info(data);
+            return cleanData(data, slice, opConfig);
+        })
+        .then(data => chunkFormatter[opConfig.format](data, logger));
 }
-
-// This function checks to see if the margin is needed for the chunk and adds the extra margin read
-// options if so
-function checkMargin(chunkOptions) {
-    const finalChar = chunkOptions.data[chunkOptions.data.length - 1];
-    // Skip the margin if the raw data ends with a newline since it will end with a complete
-    // record
-    if (finalChar === chunkOptions.delimiter) {
-        chunkOptions.needMargin = false;
-    }
-    if (chunkOptions.needMargin) {
-        const avgSize = averageRecordSize(chunkOptions.data.split('\n'));
-        chunkOptions.marginOptions = {};
-        // Safety margin of two average-sized records
-        chunkOptions.marginOptions.length = avgSize * 2;
-        chunkOptions.marginOptions.offset = chunkOptions.options.offset
-            + chunkOptions.options.length;
-    }
-    return chunkOptions;
-}
-
 
 // This function takes the raw data and breaks it into records, getting rid of anything preceding
-// the first complete record if the data does not start with a complete record. It just returns an
-// array of the records contained in the data
-function cleanData(chunkOptions) {
+// the first complete record if the data does not start with a complete record
+function cleanData(rawData, slice, opConfig) {
     /* Since slices with a non-zero chunk offset grab the character immediately preceding the main
      * chunk, if one of those chunks has a delimiter as the first or second character, it means the
      * chunk starts with a complete record. In this case as well as when the chunk begins with a
@@ -62,23 +60,21 @@ function cleanData(chunkOptions) {
      * with a garbage record
      */
 
-    let outputData = chunkOptions.data;
+    let outputData = rawData;
     // Get rid of last character if it is the delimiter since that will just result in an empty
     // record
-    if (outputData[outputData.length - 1] === chunkOptions.delimiter) {
-        outputData = outputData.substring(0, outputData.length - 1);
+    if (rawData[rawData.length - 1] === opConfig.delimiter) {
+        outputData = rawData.substring(0, rawData.length - 1);
     }
 
-    if (chunkOptions.options.offset === 0) {
+    if (slice.offset === 0) {
         // Return everthing
-        return outputData.split(chunkOptions.delimiter);
+        return outputData.split(opConfig.delimiter);
     }
 
-    return outputData.split(chunkOptions.delimiter).splice(1);
+    return outputData.split(opConfig.delimiter).splice(1);
 }
 
 module.exports = {
-    getReadOptions,
-    checkMargin,
-    cleanData
+    getChunk
 };

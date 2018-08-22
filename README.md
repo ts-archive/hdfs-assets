@@ -46,38 +46,9 @@ This is a processor for reading data out of HDFS file. Currently only supports d
 | user | Specifies the user to connect to HDFS with | hdfs | N |
 | path | Location of files to process | -- | Y |
 | size | Specifies slice size in bytes | 100000 | N |
-| format | Format of the target file. Currently only supports "jsonLines" | jsonLines | N |
+| format | Format of the target file. Currently only supports "json" | json | N |
 | connection | Specifies the HDFS connector to use | default | N |
 
 In the event a slice ends in the middle of a record, the reader will read ahead in the file in order
 to make sure the last slice is completely read from the file. Additionally, if a slice begins with
 a partial record, that will be dropped before trying to process the records.
-
-# Chunk Formatting and Settings
-The logic for determining file offsets, the need for reading extra margin, and formatting the data
-has been externalized for use with other readers. The `chunk_settings` module interacts with the
-processor using the `chunkOptions` object, which contains the settings needed for reading any given
-chunk. The `chunkOptions` object has the following format:  
-
-```
-{
-    path: '/some/path/to/data',
-    needMargin: true,
-    delimiter: '\n',
-    data: 'some set of data read\nfrom a file',
-    options: {
-        offset: 25,
-        length: 33
-    },
-    marginOptions: {
-        offset: 58,
-        length: 10
-    }
-}
-```
-
-The settings in this object are determined automatically by the settings in the opConfig
-and the details about the slice. At the end of the reader, `chunk_settings.cleanData` is used to
-break the raw data into records and return those in an array. The array of records is finally passed
-through the `chunk_formatter` module to format the records based on what is specified in the
-opConfig.

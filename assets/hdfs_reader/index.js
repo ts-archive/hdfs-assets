@@ -2,8 +2,7 @@
 
 const Promise = require('bluebird');
 const Queue = require('@terascope/queue');
-const chunkSettings = require('../lib/chunk_settings');
-const chunkFormater = require('../lib/chunk_formatter');
+const chunkReader = require('../lib/chunk_settings');
 
 
 function getClient(context, config, type) {
@@ -86,44 +85,22 @@ function newSlicer(context, executionContext, retryData, logger) {
 
 
 function newReader(context, opConfig) {
-    // Set up a logger
     const logger = context.apis.foundation.makeLogger({ module: 'hdfs_reader' });
     const clientService = getClient(context, opConfig, 'hdfs_ha');
     const hdfsClient = clientService.client;
 
+
     return function processSlice(slice) {
-        return new Promise(
-            resolve => resolve(chunkSettings.getReadOptions(slice, opConfig))
-        )
-            .then(readOptions => readFile(hdfsClient, readOptions, false))
-            .then(readOptions => chunkSettings.checkMargin(readOptions))
-            .then((readOptions) => {
-                if (readOptions.needMargin) {
-                    return readFile(hdfsClient, readOptions, readOptions.needMargin);
-                }
-                return readOptions;
-            })
-            .then(readOptions => chunkSettings.cleanData(readOptions))
-            .then(data => chunkFormater[opConfig.format](data, logger))
+        function reader(offset, length) {
+            const opts = {
+                offset,
+                length
+            };
+            return hdfsClient.openAsync(slice.path, opts);
+        }
+        return chunkReader.getChunk(reader, slice, opConfig, logger)
             .catch(err => Promise.reject(parseError(err)));
     };
-}
-
-// This function will just read a chunk from the file and add it to `readOptions.data`. `isMargin`
-// just tells the function if data needs to be cut before being added to the payload
-function readFile(hdfsClient, readOptions, isMargin) {
-    if (isMargin) {
-        return hdfsClient.openAsync(readOptions.path, readOptions.marginOptions)
-            .then((data) => {
-                readOptions.data = `${readOptions.data}${data.split(readOptions.delimiter)[0]}`;
-                return readOptions;
-            });
-    }
-    return hdfsClient.openAsync(readOptions.path, readOptions.options)
-        .then((data) => {
-            readOptions.data = data;
-            return readOptions;
-        });
 }
 
 function parseError(err) {
@@ -155,26 +132,26 @@ function schema() {
                 }
             }
         },
+        delimiter: {
+            doc: 'Determines the delimiter used in the file being read. '
+                + 'Currently only supports "\n"',
+            default: '\n',
+            format: ['\n']
+        },
         size: {
             doc: 'Determines slice size in bytes',
             default: 100000,
             format: Number
         },
         format: {
-            doc: 'Format of the target file. Currently only supports "json_lines"',
-            default: 'jsonLines',
-            format: ['jsonLines']
+            doc: 'Format of the target file. Currently only supports "json"',
+            default: 'json',
+            format: ['json']
         },
         connection: {
             doc: 'Name of the HDFS connection to use.',
             default: 'default',
             format: 'optional_String'
-        },
-        line_delimiter: {
-            doc: 'Specifies the line delimiter for the file(s) being read. Currently `\n` is the '
-            + 'only supported delimiter.',
-            default: '\n',
-            format: ['\n']
         }
     };
 }
