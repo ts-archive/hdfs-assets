@@ -42,16 +42,26 @@ function newProcessor(context, opConfig) {
     // Records the name of the offending file with a detected corrupt block in `appendErrors`
     function recordFileError(name) {
         let newFilename = '';
-        if (!appendErrors[name]) {
+        if (!appendErrors.retry && !appendErrors[name]) {
             newFilename = `${name}.0`;
             appendErrors[name] = newFilename;
+            // Ensures this block will not be executed again after the first error for a file
+            appendErrors.retry = true;
         } else {
+            // Get the original file name from the error message
+            const originalFile = name
+                .split('.')
+                .reverse()
+                .splice(1)
+                .reverse()
+                .join('.');
             // Get the last attempted file and increment the number
-            const incNum = appendErrors[name].split('.').reverse()[0] * 1 + 1;
-            newFilename = `${name}.${incNum}`;
+            const incNum = appendErrors[originalFile].split('.').reverse()[0] * 1 + 1;
+            newFilename = `${originalFile}.${incNum}`;
             // Set the new target for the next slice attempt
-            appendErrors[name] = newFilename;
+            appendErrors[originalFile] = newFilename;
         }
+        return newFilename;
     }
 
     // This just checks `appendErrors` for the file to determine if data needs to be redirected to
@@ -93,8 +103,13 @@ function newProcessor(context, opConfig) {
             .catch((err) => {
                 const errMsg = err.stack ? err.stack : err;
                 let sliceError = '';
-                // Detecting the hdfs append error and updating the filename
-                if (errMsg.indexOf('AlreadyBeingCreatedException') > -1) {
+                /* Detecting the hdfs append error caused by block relocation and updating the
+                /* filename. The `AlreadyBeingCreatedException` error is caused by something else
+                /* and needs to be investigated further before implementing a fix. The error caused
+                /* by the block relocation manifests itself as a stacktrace pointing at the file in
+                /* this check.
+                 */
+                if (errMsg.indexOf('remoteexception.js') > -1) {
                     const newFilename = recordFileError(filename);
                     sliceError = `Error sending data to file '${filename}' due to HDFS append `
                         + `error. Changing destination to '${newFilename}'. Error: ${errMsg}`;
