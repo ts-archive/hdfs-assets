@@ -27,12 +27,7 @@ function _recordFileError(name, errorLog) {
     // Get the original file name from the error message. If there have been no previous errors
     // for the given file, this will result in a bogus filename that will trigger the second
     // block of the following checks. Otherwise, the third block will be used to get a new name
-    const fileBase = name
-        .split('.')
-        .reverse()
-        .splice(1)
-        .reverse()
-        .join('.');
+    const fileBase = name.substring(0, name.lastIndexOf('.'));
     if (!errorLog.retry) {
         // In this case, there has not been any hdfs append errors for a worker
 
@@ -57,7 +52,7 @@ function _recordFileError(name, errorLog) {
         // In this case, there has been at least one hdfs append error for the given file
 
         // Get the last attempted file and increment the number
-        const incNum = errorLog[fileBase].split('.').reverse()[0] * 1 + 1;
+        const incNum = +errorLog[fileBase].split('.').slice(-1) + 1;
         newFilename = `${fileBase}.${incNum}`;
         // Set the new target for the next slice attempt
         errorLog[fileBase] = newFilename;
@@ -71,7 +66,7 @@ function _checkFileHistory(name, errorLog, maxWrites) {
     // If the file has already had an error, update the filename for the next write
     // attempt
     if (errorLog[name]) {
-        const attemptNum = errorLog[name].split('.').reverse()[0] * 1;
+        const attemptNum = +errorLog[name].split('.').slice(-1);
         // This stops the worker from creating too many new files
         if (attemptNum > maxWrites) {
             throw new Error(
