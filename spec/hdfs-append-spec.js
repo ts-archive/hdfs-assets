@@ -1,6 +1,6 @@
 'use strict';
 
-const hdfsAppend = require('../assets/hdfs_append/index.js');
+const hdfsAppend = require('../asset/hdfs_append/index.js');
 
 
 // Start out with no file errors
