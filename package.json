@@ -4,13 +4,14 @@
   "description": "A bundle of assets for interacting with HDFS ",
   "main": "index.js",
   "repository": "https://github.com/terascope/hdfs-assets.git",
-  "author": "Zach Burnham <zburnham@terascope.io>",
+  "author": "Terascope, LLC <info@terascope.io>",
   "license": "MIT",
   "scripts": {
+    "build": "scripts/build.sh",
     "lint": "eslint *.js spec lib",
     "lint:fix": "eslint --fix *.js spec lib",
-    "test": "nyc -x spec/ --reporter=text-summary jasmine && nyc report --reporter=html",
-    "report-coverage": "nyc report --reporter=text-lcov > coverage/coverage.lcov && codecov"
+    "test": "jest",
+    "postinstall": "yarn --cwd ./asset --prod --silent --no-progress"
   },
   "nyc": {
     "cache": true,
@@ -30,7 +31,6 @@
     "eslint": "^5.3.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
-    "jasmine": "^3.2.0",
-    "jasmine-spec-reporter": "^4.2.1"
+    "jest": "^23.6.0"
   }
 }
