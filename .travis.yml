@@ -5,17 +5,12 @@ node_js:
 os:
   - linux
   - osx
-jobs:
-  include:
-    - script: yarn test
-    - stage: GitHub Build Release
-      if: tag IS present
-      script: yarn build
-      deploy:
-        provider: releases
-        api_key: $GITHUB_TOKEN
-        file_glob: true
-        file: builds/*.zip
-        skip_cleanup: true
-        on:
-          tags: true
+before_deploy: yarn build
+deploy:
+  provider: releases
+  api_key: $GITHUB_TOKEN
+  file_glob: true
+  file: builds/*.zip
+  skip_cleanup: true
+  on:
+    tags: true
