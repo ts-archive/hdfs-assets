@@ -98,7 +98,7 @@ function newReader(context, opConfig) {
             };
             return hdfsClient.openAsync(slice.path, opts);
         }
-        return chunkReader.getChunk(reader, slice, opConfig, logger)
+        return chunkReader.getChunk(reader, slice, opConfig, logger, slice)
             .catch(err => Promise.reject(parseError(err)));
     };
 }
