@@ -73,14 +73,11 @@ function newSlicer(context, executionContext) {
                 return true;
             }))
             .return([() => queue.dequeue()])
-            .catch(err => Promise.reject(parseError(err)));
+            .catch(err => Promise.reject(new TSError(err)));
     }
 
     return getFilePaths(opConfig.path)
-        .catch((err) => {
-            const errMsg = parseError(err);
-            return Promise.reject(new TSError(errMsg, 'Error while listing files in hdfs'));
-        });
+        .catch(err => Promise.reject(new TSError(err)));
 }
 
 
@@ -99,15 +96,8 @@ function newReader(context, opConfig) {
             return hdfsClient.openAsync(slice.path, opts);
         }
         return chunkReader.getChunk(reader, slice, opConfig, logger, slice)
-            .catch(err => Promise.reject(parseError(err)));
+            .catch(err => Promise.reject(new TSError(err)));
     };
-}
-
-function parseError(err) {
-    if (err.message && err.exception) {
-        return `Error while reading from HDFS, error: ${err.exception}, ${err.message}`;
-    }
-    return `Error while reading from HDFS, error: ${err}`;
 }
 
 
