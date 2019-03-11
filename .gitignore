@@ -64,3 +64,4 @@ tmp/
 
 # Teraslice Asset Bundle Zipfiles
 builds/
+build/

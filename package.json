@@ -1,36 +1,22 @@
 {
-  "name": "hdfs-assets",
-  "version": "0.1.0",
-  "description": "A bundle of assets for interacting with HDFS ",
-  "main": "index.js",
-  "repository": "https://github.com/terascope/hdfs-assets.git",
-  "author": "Terascope, LLC <info@terascope.io>",
-  "license": "MIT",
-  "scripts": {
-    "build": "scripts/build.sh",
-    "lint": "eslint *.js spec lib",
-    "lint:fix": "eslint --fix *.js spec lib",
-    "test": "jest",
-    "postinstall": "yarn --cwd ./asset --prod --silent --no-progress"
-  },
-  "nyc": {
-    "cache": true,
-    "all": true,
-    "include": [
-      "*.js",
-      "lib/*.js"
-    ],
-    "reporter": [
-      "text-summary",
-      "html",
-      "lcov",
-      "json"
-    ]
-  },
-  "devDependencies": {
-    "eslint": "^5.3.0",
-    "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.14.0",
-    "jest": "^23.6.0"
-  }
+    "name": "hdfs-assets",
+    "version": "0.1.43",
+    "description": "A bundle of assets for interacting with HDFS ",
+    "main": "index.js",
+    "repository": "https://github.com/terascope/hdfs-assets.git",
+    "author": "Terascope, LLC <info@terascope.io>",
+    "license": "MIT",
+    "scripts": {
+        "lint": "eslint asset/**/*.js test/**/*.js",
+        "lint:fix": "eslint --fix asset/**/*.js test/**/*.js",
+        "test": "jest",
+        "postinstall": "yarn --cwd ./asset --prod --no-progress"
+    },
+    "devDependencies": {
+        "eslint": "^5.15.1",
+        "eslint-config-airbnb-base": "^13.1.0",
+        "eslint-plugin-import": "^2.16.0",
+        "jest": "^24.4.0",
+        "jest-extended": "^0.11.1"
+    }
 }
