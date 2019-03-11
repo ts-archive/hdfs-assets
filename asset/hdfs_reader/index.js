@@ -1,10 +1,10 @@
 'use strict';
 
+const path = require('path');
 const Promise = require('bluebird');
 const Queue = require('@terascope/queue');
 const chunkReader = require('@terascope/chunked-file-reader');
 const { TSError } = require('@terascope/utils');
-
 
 function getClient(context, config, type) {
     const clientConfig = {};
@@ -35,7 +35,8 @@ function newSlicer(context, executionContext) {
         let fileSize = file.length;
 
         if (fileSize <= opConfig.size) {
-            queue.enqueue({ path: `${filePath}/${file.pathSuffix}`, fullChunk: true });
+            const fullFilePath = path.join(filePath, file.pathSuffix);
+            queue.enqueue({ path: fullFilePath, fullChunk: true });
         } else {
             let offset = 0;
             while (fileSize > 0) {
@@ -50,7 +51,7 @@ function newSlicer(context, executionContext) {
                     readLength = length + 1;
                 }
                 queue.enqueue({
-                    path: `${filePath}/${file.pathSuffix}`,
+                    path: path.join(filePath, file.pathSuffix),
                     offset: startSpot,
                     length: readLength,
                     total: totalLength
@@ -68,7 +69,8 @@ function newSlicer(context, executionContext) {
                     return processFile(metadata, filePath);
                 }
                 if (metadata.type === 'DIRECTORY') {
-                    return getFilePaths(`${filePath}/${metadata.pathSuffix}`);
+                    const fullFilePath = path.join(filePath, metadata.pathSuffix);
+                    return getFilePaths(fullFilePath);
                 }
                 return true;
             }))
@@ -100,6 +102,16 @@ function newReader(context, opConfig) {
     };
 }
 
+<<<<<<< HEAD
+=======
+function parseError(err) {
+    if (err.message && err.exception) {
+        return `Failure while reading from HDFS, error: ${err.exception}, ${err.message}`;
+    }
+    return `Failure while reading from HDFS, error: ${err}`;
+}
+
+>>>>>>> use path.join and handle errors cleanly
 
 function schema() {
     return {

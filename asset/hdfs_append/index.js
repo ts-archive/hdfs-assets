@@ -5,7 +5,6 @@ const Promise = require('bluebird');
 const path = require('path');
 const { TSError } = require('@terascope/utils');
 
-
 function getClient(context, config, type) {
     const clientConfig = {};
     clientConfig.type = type;
@@ -104,21 +103,18 @@ function newProcessor(context, opConfig) {
         return hdfsClient.getFileStatusAsync(filename)
             .catch(() => hdfsClient.mkdirsAsync(path.dirname(filename))
                 .then(() => hdfsClient.createAsync(filename, ''))
-                .catch((err) => {
-                    const errMsg = err.stack;
-                    return Promise.reject(new TSError(errMsg, {
-                        reason: 'Error while attempting to create a file',
-                        context: {
-                            filename
-                        }
-                    }));
-                }))
+                .catch(err => Promise.reject(new TSError(err, {
+                    reason: 'Error while attempting to create a file',
+                    context: {
+                        filename
+                    }
+                }))))
             .return(chunks)
             // We need to serialize the storage of chunks so we run with concurrency 1
             .map(chunk => hdfsClient.appendAsync(filename, chunk), { concurrency: 1 })
             .catch((err) => {
                 const errMsg = err.stack ? err.stack : err;
-                let sliceError = '';
+                let sliceError;
                 /* Detecting the hdfs append error caused by block relocation and updating the
                 /* filename. The `AlreadyBeingCreatedException` error is caused by something else
                 /* and needs to be investigated further before implementing a fix. The error caused
@@ -142,9 +138,11 @@ function newProcessor(context, opConfig) {
                         }
                     });
                 }
+
                 if (opConfig.log_data_on_error === true) {
                     sliceError.context.data = JSON.stringify(chunks);
                 }
+
                 return Promise.reject(sliceError);
             });
     }
@@ -174,9 +172,8 @@ function newProcessor(context, opConfig) {
             // We can process all individual files in parallel.
             return Promise.all(stores)
                 .catch((err) => {
-                    const errMsg = err.stack ? err.stack : err;
-                    const error = new TSError(errMsg, {
-                        reason: 'Error sending data to file'
+                    const error = new TSError(err, {
+                        reason: 'Failure while sending to hdfs'
                     });
                     return Promise.reject(error);
                 });

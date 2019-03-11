@@ -1,16 +1,16 @@
 'use strict';
 
 module.exports = {
-    rootDir: '.',
-    testMatch: [
-        '<rootDir>/spec/*-spec.js'
+    verbose: true,
+    testEnvironment: 'node',
+    setupFilesAfterEnv: [
+        'jest-extended'
     ],
     collectCoverage: true,
-    collectCoverageFrom: [
-        '<rootDir>/asset/**/*.js',
-        '<rootDir>/asset/*/*.js',
-        '!<rootDir>/asset/node_modules',
+    coverageReporters: ['json', 'lcov', 'text', 'html'],
+    coverageDirectory: 'coverage',
+    testMatch: [
+        '<rootDir>/test/**/*-spec.{ts,js}',
+        '<rootDir>/test/*-spec.{ts,js}',
     ],
-    coverageReporters: ['lcov', 'text-summary', 'html'],
-    coverageDirectory: '<rootDir>/coverage'
 };
