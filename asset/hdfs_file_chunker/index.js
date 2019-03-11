@@ -16,6 +16,7 @@
  */
 
 const _ = require('lodash');
+const path = require('path');
 
 function newProcessor(context, opConfig) {
     const config = context.sysconfig;
@@ -84,16 +85,16 @@ function formattedDate(record, opConfig) {
 }
 
 function getFileName(name, opConfig, config) {
-    let path = opConfig.directory;
+    let filePath = opConfig.directory;
     if (name && (name !== '__single__')) {
-        path = `${opConfig.directory}-${name}`;
+        filePath = `${opConfig.directory}-${name}`;
     }
 
     // If filename is specified we default to this
-    let filename = `${path}/${config._nodeName}`;
+    let filename = path.join(filePath, config._nodeName);
 
     if (opConfig.filename) {
-        filename = `${path}/${opConfig.filename}`;
+        filename = path.join(filePath, opConfig.filename);
     }
 
     return filename;
