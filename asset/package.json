@@ -1,14 +1,15 @@
 {
   "name": "hdfs",
-  "version": "0.1.42",
+  "version": "0.2.0",
   "description": "A bundle of assets for interacting with HDFS ",
   "main": "index.js",
   "repository": "https://github.com/terascope/hdfs-assets.git",
   "author": "Zach Burnham <zburnham@terascope.io>",
   "license": "MIT",
   "dependencies": {
-    "@terascope/chunked-file-reader": "^0.1.1",
+    "@terascope/chunked-file-reader": "^1.0.0",
     "@terascope/queue": "^1.1.3",
+    "@terascope/utils": "^0.4.0",
     "bluebird": "^3.5.1",
     "lodash": "^4.17.10"
   }

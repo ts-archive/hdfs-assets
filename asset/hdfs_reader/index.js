@@ -3,6 +3,7 @@
 const Promise = require('bluebird');
 const Queue = require('@terascope/queue');
 const chunkReader = require('@terascope/chunked-file-reader');
+const { TSError } = require('@terascope/utils');
 
 
 function getClient(context, config, type) {
@@ -23,7 +24,7 @@ function getClient(context, config, type) {
 
 const parallelSlicers = false;
 
-function newSlicer(context, executionContext, retryData, logger) {
+function newSlicer(context, executionContext) {
     const opConfig = executionContext.config.operations[0];
     const clientService = getClient(context, opConfig, 'hdfs_ha');
     const hdfsClient = clientService.client;
@@ -72,15 +73,11 @@ function newSlicer(context, executionContext, retryData, logger) {
                 return true;
             }))
             .return([() => queue.dequeue()])
-            .catch(err => Promise.reject(parseError(err)));
+            .catch(err => Promise.reject(new TSError(err)));
     }
 
     return getFilePaths(opConfig.path)
-        .catch((err) => {
-            const errMsg = parseError(err);
-            logger.error(`Error while reading from hdfs, error: ${errMsg}`);
-            return Promise.reject(errMsg);
-        });
+        .catch(err => Promise.reject(new TSError(err)));
 }
 
 
@@ -98,16 +95,9 @@ function newReader(context, opConfig) {
             };
             return hdfsClient.openAsync(slice.path, opts);
         }
-        return chunkReader.getChunk(reader, slice, opConfig, logger)
-            .catch(err => Promise.reject(parseError(err)));
+        return chunkReader.getChunk(reader, slice, opConfig, logger, slice)
+            .catch(err => Promise.reject(new TSError(err)));
     };
-}
-
-function parseError(err) {
-    if (err.message && err.exception) {
-        return `Error while reading from HDFS, error: ${err.exception}, ${err.message}`;
-    }
-    return `Error while reading from HDFS, error: ${err}`;
 }
 
 

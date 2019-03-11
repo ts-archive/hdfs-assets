@@ -37,7 +37,7 @@ processor.
 ## hdfs_reader
 
 This is a processor for reading data out of HDFS file. Currently only supports data stored in
-`json_lines` format.
+`json_lines` format and is only intended for use as a `once` job.
 
 ### Parameters
 

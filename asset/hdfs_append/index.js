@@ -3,6 +3,7 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const path = require('path');
+const { TSError } = require('@terascope/utils');
 
 
 function getClient(context, config, type) {
@@ -69,9 +70,7 @@ function _checkFileHistory(name, errorLog, maxWrites) {
         const attemptNum = +errorLog[name].split('.').slice(-1);
         // This stops the worker from creating too many new files
         if (attemptNum > maxWrites) {
-            throw new Error(
-                `${name} has exceeded the maximum number of write attempts!`
-            );
+            throw new TSError(`${name} has exceeded the maximum number of write attempts!`);
         }
         return errorLog[name];
     }
@@ -107,10 +106,12 @@ function newProcessor(context, opConfig) {
                 .then(() => hdfsClient.createAsync(filename, ''))
                 .catch((err) => {
                     const errMsg = err.stack;
-                    return Promise.reject(
-                        `Error while attempting to create the file: ${filename} on hdfs, error: `
-                        + `${errMsg}`
-                    );
+                    return Promise.reject(new TSError(errMsg, {
+                        reason: 'Error while attempting to create a file',
+                        context: {
+                            filename
+                        }
+                    }));
                 }))
             .return(chunks)
             // We need to serialize the storage of chunks so we run with concurrency 1
@@ -126,13 +127,23 @@ function newProcessor(context, opConfig) {
                  */
                 if (errMsg.indexOf('remoteexception.js') > -1) {
                     const newFilename = _recordFileError(filename, appendErrors);
-                    sliceError = `Error sending data to file '${filename}' due to HDFS append `
-                        + `error. Changing destination to '${newFilename}'. Error: ${errMsg}`;
+                    sliceError = new TSError(errMsg, {
+                        reason: 'Changing file name due to HDFS append error',
+                        context: {
+                            file: filename,
+                            new_file: newFilename
+                        }
+                    });
                 } else {
-                    sliceError = `Error sending data to file: ${filename}, Error: ${errMsg}`;
+                    sliceError = new TSError(errMsg, {
+                        reason: 'Error sending data to file',
+                        context: {
+                            file: filename
+                        }
+                    });
                 }
                 if (opConfig.log_data_on_error === true) {
-                    sliceError = `${sliceError} Data: ${JSON.stringify(chunks)}`;
+                    sliceError.context.data = JSON.stringify(chunks);
                 }
                 return Promise.reject(sliceError);
             });
@@ -164,8 +175,10 @@ function newProcessor(context, opConfig) {
             return Promise.all(stores)
                 .catch((err) => {
                     const errMsg = err.stack ? err.stack : err;
-                    logger.error(`Error while sending to hdfs, error: ${errMsg}`);
-                    return Promise.reject(err);
+                    const error = new TSError(errMsg, {
+                        reason: 'Error sending data to file'
+                    });
+                    return Promise.reject(error);
                 });
         }
 
