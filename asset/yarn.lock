@@ -2,12 +2,15 @@
 # yarn lockfile v1
 
 
-"@terascope/chunked-file-reader@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@terascope/chunked-file-reader/-/chunked-file-reader-1.0.0.tgz#9634b2aaf9b06c9d17284c2dd58a9a0fe09a2683"
+"@terascope/chunked-file-reader@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@terascope/chunked-file-reader/-/chunked-file-reader-2.1.0.tgz#caa4484be4c58720faed2106ff19694eb4c538eb"
+  integrity sha512-viFpL2C9cwG+90QZLyGku/I+aP9fZAm25E+CWhX8yKiGQ6hmM2OCXIHT3vYFJVhix8SmmfRCFpSlhFHqhVPiVw==
   dependencies:
-    "@terascope/utils" "^0.4.0"
-    bluebird "^3.5.1"
+    "@terascope/utils" "^0.9.0"
+    bluebird "^3.5.4"
+    csvtojson "^2.0.8"
+    lodash "^4.17.11"
 
 "@terascope/queue@^1.1.6":
   version "1.1.6"
@@ -26,19 +29,29 @@
     lodash.get "^4.4.2"
     lodash.set "^4.3.2"
 
-"@terascope/utils@^0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@terascope/utils/-/utils-0.4.0.tgz#b66fac19ec725fa9e916626620cde78bb22333f8"
+"@terascope/utils@^0.9.0":
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/@terascope/utils/-/utils-0.9.0.tgz#5f49e4f6d118c6756390986b439af8312b31396c"
+  integrity sha512-x6IxtGLVYeyjdAQq047g2wDB8iDhwLKLfKPqcGyGKRLlfwmtzg1XH7jGN1wTGawKkDmegAssOzSFVXQvzccTPQ==
   dependencies:
     debug "^4.1.1"
     is-plain-object "^2.0.4"
     kind-of "^6.0.2"
     lodash.clonedeep "^4.5.0"
 
-bluebird@^3.5.1, bluebird@^3.5.5:
+bluebird@^3.5.1, bluebird@^3.5.4, bluebird@^3.5.5:
   version "3.5.5"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.5.tgz#a8d0afd73251effbbd5fe384a77d73003c17a71f"
   integrity sha512-5am6HnnfN+urzt4yfg7IgTbotDjIT/u8AJpEt0sIU9FtXfVeezXAPKswrG+xKUCOYAINpSdgZVDU6QFh+cuH3w==
+
+csvtojson@^2.0.8:
+  version "2.0.8"
+  resolved "https://registry.yarnpkg.com/csvtojson/-/csvtojson-2.0.8.tgz#d889f19576b2b33ead235490d2e5c9791481e8d3"
+  integrity sha512-DC6YFtsJiA7t/Yz+KjzT6GXuKtU/5gRbbl7HJqvDVVir+dxdw2/1EgwfgJdnsvUT7lOnON5DvGftKuYWX1nMOQ==
+  dependencies:
+    bluebird "^3.5.1"
+    lodash "^4.17.3"
+    strip-bom "^2.0.0"
 
 debug@^4.1.1:
   version "4.1.1"
@@ -60,6 +73,11 @@ is-plain-object@^3.0.0:
   integrity sha512-tZIpofR+P05k8Aocp7UI/2UTa9lTJSebCXpFFoR9aibpokDj/uXBsJ8luUu0tTVYKkMU6URDUuOfJZ7koewXvg==
   dependencies:
     isobject "^4.0.0"
+
+is-utf8@^0.2.0:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/is-utf8/-/is-utf8-0.2.1.tgz#4b0da1442104d1b336340e80797e865cf39f7d72"
+  integrity sha1-Sw2hRCEE0bM2NA6AeX6GXPOffXI=
 
 isobject@^3.0.1:
   version "3.0.1"
@@ -91,7 +109,7 @@ lodash.set@^4.3.2:
   resolved "https://registry.yarnpkg.com/lodash.set/-/lodash.set-4.3.2.tgz#d8757b1da807dde24816b0d6a84bea1a76230b23"
   integrity sha1-2HV7HagH3eJIFrDWqEvqGnYjCyM=
 
-lodash@^4.17.10:
+lodash@^4.17.10, lodash@^4.17.11, lodash@^4.17.3:
   version "4.17.11"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
   integrity sha512-cQKh8igo5QUhZ7lg38DYWAxMvjSAKG0A8wGSVimP07SIUEK2UO+arSRKbRZWtelMtN5V0Hkwh5ryOto/SshYIg==
@@ -100,3 +118,10 @@ ms@^2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.1.tgz#30a5864eb3ebb0a66f2ebe6d727af06a09d86e0a"
   integrity sha512-tgp+dl5cGk28utYktBsrFqA7HKgrhgPsg6Z/EfhWI4gl1Hwq8B/GmY/0oXZ6nF8hDVesS/FpnYaD/kOWhYQvyg==
+
+strip-bom@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/strip-bom/-/strip-bom-2.0.0.tgz#6219a85616520491f35788bdbf1447a99c7e6b0e"
+  integrity sha1-YhmoVhZSBJHzV4i9vxRHqZx+aw4=
+  dependencies:
+    is-utf8 "^0.2.0"
