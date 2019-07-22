@@ -11,6 +11,6 @@
         "@terascope/queue": "^1.1.6",
         "@terascope/utils": "^0.12.4",
         "bluebird": "^3.5.5",
-        "lodash": "^4.17.14"
+        "lodash": "^4.17.15"
     }
 }
