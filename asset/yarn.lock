@@ -2,12 +2,12 @@
 # yarn lockfile v1
 
 
-"@terascope/chunked-file-reader@^2.1.1":
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/@terascope/chunked-file-reader/-/chunked-file-reader-2.1.1.tgz#cd9bffe56fdd353605ce42f224f5aa7f22669dae"
-  integrity sha512-iNhupJ6TPyG4r9Ym8ml2h3AZOfYT4ax+R9NTUO1vUg0pdZJCUae71VruHatrG5ZYm7NpHL5LdDrNM65Lt4ERpQ==
+"@terascope/chunked-file-reader@^2.1.2":
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/@terascope/chunked-file-reader/-/chunked-file-reader-2.1.2.tgz#55f0adb0b2133950cc1d70f73c1bc6d403ed0f64"
+  integrity sha512-afkmy1X/5P0tVKJmT/YbmqWFVwmHYubxRCiXA1KFmMibtL8+MLbBdeSsK1Dj06hMwcDjwTpfeMQL6y9wtsKiQg==
   dependencies:
-    "@terascope/utils" "^0.12.2"
+    "@terascope/utils" "^0.14.1"
     bluebird "^3.5.5"
     csvtojson "^2.0.8"
     lodash "^4.17.11"
@@ -17,10 +17,10 @@
   resolved "https://registry.yarnpkg.com/@terascope/queue/-/queue-1.1.6.tgz#763d035cf31d2e1fd819ae827274f50874016708"
   integrity sha512-TmLOLh49UVdksjwAUzOO6lqOQMwJIW0pHsXKibcdfzAcUgwXL3JH6BjO2l1u5njQeHjoj1SOyBk6aU1/fHd0PQ==
 
-"@terascope/utils@^0.12.2":
-  version "0.12.4"
-  resolved "https://registry.yarnpkg.com/@terascope/utils/-/utils-0.12.4.tgz#bc849b574c0f7cf9a4163db241dc8b2db92546ac"
-  integrity sha512-iA2/7cGTqkiOP/wyS46iFjTYVbIHpNmJ2hlAfTbUxPQvnU6rP1H2zi5ZK1NRfKBrrp0JvcqxgBQVWReIbt27QA==
+"@terascope/utils@^0.14.1":
+  version "0.14.1"
+  resolved "https://registry.yarnpkg.com/@terascope/utils/-/utils-0.14.1.tgz#8b24dcdfca5be2e96bf5edeb0d51be156e661b3f"
+  integrity sha512-8XSrOXCY18AC/EsL+ebC2NFGDinIDcjz1BQWFHoXifaZGCPG3gqkodrz/O0QgF9plkrNVp69oZ4bzbITlNtUeg==
   dependencies:
     debug "^4.1.1"
     is-plain-object "^3.0.0"

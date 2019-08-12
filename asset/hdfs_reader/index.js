@@ -64,7 +64,7 @@ function newSlicer(context, executionContext) {
 
     function getFilePaths(filePath) {
         return hdfsClient.listStatusAsync(filePath)
-            .then(results => Promise.map(results, (metadata) => {
+            .then((results) => Promise.map(results, (metadata) => {
                 if (metadata.type === 'FILE') {
                     return processFile(metadata, filePath);
                 }
@@ -75,11 +75,11 @@ function newSlicer(context, executionContext) {
                 return true;
             }))
             .return([() => queue.dequeue()])
-            .catch(err => Promise.reject(new TSError(err)));
+            .catch((err) => Promise.reject(new TSError(err)));
     }
 
     return getFilePaths(opConfig.path)
-        .catch(err => Promise.reject(new TSError(err)));
+        .catch((err) => Promise.reject(new TSError(err)));
 }
 
 
@@ -98,20 +98,9 @@ function newReader(context, opConfig) {
             return hdfsClient.openAsync(slice.path, opts);
         }
         return chunkReader.getChunk(reader, slice, opConfig, logger, slice)
-            .catch(err => Promise.reject(new TSError(err)));
+            .catch((err) => Promise.reject(new TSError(err)));
     };
 }
-
-<<<<<<< HEAD
-=======
-function parseError(err) {
-    if (err.message && err.exception) {
-        return `Failure while reading from HDFS, error: ${err.exception}, ${err.message}`;
-    }
-    return `Failure while reading from HDFS, error: ${err}`;
-}
-
->>>>>>> use path.join and handle errors cleanly
 
 function schema() {
     return {
