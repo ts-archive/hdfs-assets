@@ -103,7 +103,7 @@ function newProcessor(context, opConfig) {
         return hdfsClient.getFileStatusAsync(filename)
             .catch(() => hdfsClient.mkdirsAsync(path.dirname(filename))
                 .then(() => hdfsClient.createAsync(filename, ''))
-                .catch(err => Promise.reject(new TSError(err, {
+                .catch((err) => Promise.reject(new TSError(err, {
                     reason: 'Error while attempting to create a file',
                     context: {
                         filename
@@ -111,7 +111,7 @@ function newProcessor(context, opConfig) {
                 }))))
             .return(chunks)
             // We need to serialize the storage of chunks so we run with concurrency 1
-            .map(chunk => hdfsClient.appendAsync(filename, chunk), { concurrency: 1 })
+            .map((chunk) => hdfsClient.appendAsync(filename, chunk), { concurrency: 1 })
             .catch((err) => {
                 const errMsg = err.stack ? err.stack : err;
                 let sliceError;

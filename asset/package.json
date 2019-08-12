@@ -1,13 +1,13 @@
 {
     "name": "hdfs-assets",
-    "version": "0.2.2",
+    "version": "0.2.3",
     "description": "A bundle of assets for interacting with HDFS ",
     "main": "index.js",
     "repository": "https://github.com/terascope/hdfs-assets.git",
     "author": "Terascope, LLC <info@terascope.io>",
     "license": "MIT",
     "dependencies": {
-        "@terascope/chunked-file-reader": "^2.1.1",
+        "@terascope/chunked-file-reader": "^2.1.2",
         "@terascope/queue": "^1.1.6",
         "@terascope/utils": "^0.15.0",
         "bluebird": "^3.5.5",
