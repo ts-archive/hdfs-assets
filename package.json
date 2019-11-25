@@ -16,7 +16,7 @@
     },
     "devDependencies": {
         "@terascope/eslint-config": "^0.1.7",
-        "eslint": "^6.6.0",
+        "eslint": "^6.7.1",
         "jest": "^24.9.0",
         "jest-extended": "^0.11.2"
     }
