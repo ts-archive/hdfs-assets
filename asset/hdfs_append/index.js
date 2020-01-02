@@ -94,7 +94,6 @@ function newProcessor(context, opConfig) {
     //       processing duration will keep the worker from toppling the Namenode
     const appendErrors = {};
 
-
     const clientService = getClient(context, opConfig, 'hdfs_ha');
     const hdfsClient = clientService.client;
 
