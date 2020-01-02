@@ -82,12 +82,10 @@ function newSlicer(context, executionContext) {
         .catch((err) => Promise.reject(new TSError(err)));
 }
 
-
 function newReader(context, opConfig) {
     const logger = context.apis.foundation.makeLogger({ module: 'hdfs_reader' });
     const clientService = getClient(context, opConfig, 'hdfs_ha');
     const hdfsClient = clientService.client;
-
 
     return function processSlice(slice) {
         function reader(offset, length) {
@@ -146,7 +144,6 @@ function schema() {
         }
     };
 }
-
 
 module.exports = {
     newReader,
