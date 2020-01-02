@@ -9,7 +9,7 @@
     "dependencies": {
         "@terascope/chunked-file-reader": "^2.1.12",
         "@terascope/queue": "^1.1.7",
-        "@terascope/utils": "^0.20.6",
+        "@terascope/utils": "^0.21.0",
         "bluebird": "^3.7.2",
         "lodash": "^4.17.15"
     }
