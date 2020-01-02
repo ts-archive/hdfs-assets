@@ -1,6 +1,6 @@
 {
     "name": "hdfs-assets-bundle",
-    "version": "0.3.1",
+    "version": "0.3.2",
     "description": "A bundle of assets for interacting with HDFS ",
     "main": "index.js",
     "repository": "https://github.com/terascope/hdfs-assets.git",
